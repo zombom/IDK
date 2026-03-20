@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>06</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c5a059;
+            --bright-gold: #e2c285;
+            --dark: #090a0c;
+            --border: rgba(197, 160, 89, 0.15);
+            --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark);
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            overflow: hidden; 
+        }
+
+        .scroll-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            position: relative;
+            background: radial-gradient(circle at 50% 20%, #16181d 0%, #090a0c 100%);
+        }
+        .scroll-container::-webkit-scrollbar { display: none; }
+
+        section {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            scroll-snap-align: start;
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+
+        /* PERSISTENT SPINE ELEMENTS - UPDATED HEIGHT FOR 3 SECTIONS */
+        .tree-spine-svg {
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 300vh; 
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.8)) drop-shadow(0 0 30px rgba(197, 160, 89, 0.4));
+        }
+
+        .center-axis {
+            position: absolute;
+            left: 50%;
+            top: 0; bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(197, 160, 89, 0.6), transparent);
+            transform: translateX(-50%);
+            z-index: 0;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.6);
+        }
+
+        #particle-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 30; 
+        }
+
+        .gold-particle {
+            position: absolute;
+            background: var(--gold);
+            border-radius: 50%;
+            filter: blur(1px);
+            box-shadow: 0 0 10px var(--gold), 0 0 20px rgba(197, 160, 89, 0.5);
+            opacity: 0.5;
+            animation: breathe 4s infinite alternate ease-in-out;
+        }
+
+        @keyframes breathe {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 0.8; transform: scale(1.2); }
+        }
+
+        /* THANK YOU BOX */
+        .thank-you-box {
+            max-width: 500px;
+            background: rgba(10, 11, 14, 0.85);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            padding: 60px 40px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 50px rgba(197, 160, 89, 0.15), inset 0 0 20px rgba(197, 160, 89, 0.05);
+            opacity: 0;
+            animation: softRevealPage2 2.5s cubic-bezier(0.25, 1, 0.5, 1) 0.5s forwards;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes softRevealPage2 {
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(5px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        .thank-you-box h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-weight: 400;
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
+        }
+
+        .thank-you-box p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #eaeaea;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .thank-you-box .highlight {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--bright-gold);
+            font-size: 1.3rem;
+        }
+
+        .heart-icon {
+            font-size: 2rem;
+            color: var(--gold);
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); text-shadow: 0 0 10px rgba(197, 160, 89, 0.4); }
+            50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(197, 160, 89, 0.8); }
+            100% { transform: scale(1); text-shadow: 0 0 10px rgba(197, 160, 89, 0.4); }
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 4vh;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: rgba(197, 160, 89, 0.6);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: floatUpDown 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes floatUpDown {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, 10px); }
+        }
+
+        /* MEMORIES SECTION */
+        .memories-wrapper {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .memories-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-weight: 400;
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+        }
+
+        .memories-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 50px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        .memory-card {
+            background: rgba(10, 11, 14, 0.6);
+            border: 1px solid var(--border);
+            padding: 30px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .memory-card:hover {
+            border-color: var(--gold);
+            background: rgba(197, 160, 89, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(197, 160, 89, 0.15);
+        }
+
+        .memory-numeral {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .memory-card:hover .memory-numeral {
+            opacity: 1;
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+        }
+
+        .memory-desc {
+            font-size: 0.8rem;
+            font-family: 'Montserrat', sans-serif;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+
+        /* EIDI LETTERBOX STYLES */
+        .eidi-container {
+            max-width: 500px;
+            width: 90%;
+            background: rgba(10, 11, 14, 0.85);
+            border: 1px solid var(--gold);
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        .eidi-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        #eidi-request {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            padding: 15px 5px;
+            margin-bottom: 30px;
+            outline: none;
+            resize: none;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        #eidi-request:focus {
+            border-bottom: 1px solid var(--gold);
+        }
+
+        .send-eidi-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px 30px;
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-eidi-btn:hover {
+            background: var(--gold);
+            color: var(--dark);
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .thank-you-box { padding: 40px 25px; }
+            .thank-you-box h1 { font-size: 2.5rem; }
+            .thank-you-box p { font-size: 1rem; }
+            .memory-grid { grid-template-columns: 1fr; gap: 20px; }
+            .memories-title { font-size: 2rem; }
+            .eidi-container { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="particle-container"></div>
+
+    <div class="scroll-container">
+        <div class="center-axis"></div>
+
+        <svg class="tree-spine-svg" viewBox="0 0 100 3000" preserveAspectRatio="none">
+            <path d="M50,0 C70,200 30,400 50,600 S70,1000 50,1200 S30,1600 50,1800 S70,2200 50,2400 S30,2800 50,3000" 
+                  fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-opacity="0.85"/>
+            <path d="M50,0 C30,250 70,450 50,650 S30,1050 50,1250 S70,1650 50,1850 S30,2250 50,2450 S70,2850 50,3000" 
+                  fill="none" stroke="var(--bright-gold)" stroke-width="1.5" stroke-opacity="0.6"/>
+        </svg>
+
+        <section>
+            <div class="thank-you-box">
+                <h1>Thank You.</h1>
+                <p>For your forgiveness and your grace. I promise to cherish our bond and never take it for granted.</p>
+                <p class="highlight">Here is to a fresh start, my favorite & only Kaleshi Malta, my Zum Zum.</p>
+                <div class="heart-icon">🥀</div>
+            </div>
+            <div class="scroll-hint">Scroll down...</div>
+        </section>
+
+        <section>
+            <div class="memories-wrapper">
+                <h2 class="memories-title">Treasured Echoes</h2>
+                
+                <div class="memory-grid">
+                    <a href="https://zombom.github.io/Flowers/" class="memory-card" target="_blank">
+                        <div class="memory-numeral">I</div>
+                        <div class="memory-desc">Chapter</div>
+                    </a>
+                    <a href="https://zombom.github.io/Birthday/" class="memory-card" target="_blank">
+                        <div class="memory-numeral">II</div>
+                        <div class="memory-desc">Chapter</div>
+                    </a>
+                    <a href="https://zombom.github.io/Women-s-Day/" class="memory-card" target="_blank">
+                        <div class="memory-numeral">III</div>
+                        <div class="memory-desc">Chapter</div>
+                    </a>
+                    <a href="https://zombom.github.io/Letter/" class="memory-card" target="_blank">
+                        <div class="memory-numeral">IV</div>
+                        <div class="memory-desc">Chapter</div>
+                    </a>
+                </div>
+            </div>
+            <div class="scroll-hint">Scroll down...</div>
+        </section>
+
+        <section>
+            <div class="eidi-container">
+                <h2 class="eidi-title">Eidi</h2>
+                <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-bottom: 20px; letter-spacing: 1px;">
+                    WHAT WOULD YOU LIKE?
+                </p>
+                <textarea id="eidi-request" placeholder="Type here..." rows="1"></textarea>
+                <br>
+                <button class="send-eidi-btn" onclick="sendEidi()">Send Request/Order</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Particle Generation
+        const container = document.getElementById('particle-container');
+        for (let i = 0; i < 45; i++) {
+            const p = document.createElement('div');
+            p.className = 'gold-particle';
+            const size = Math.random() * 4 + 1.5;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.top = Math.random() * 100 + 'vh';
+            p.style.animationDelay = (Math.random() * -5) + 's';
+            container.appendChild(p);
+            
+            p.animate([
+                { transform: 'translate(0, 0)' },
+                { transform: `translate(${(Math.random()-0.5)*200}px, ${(Math.random()-0.5)*200}px)` }
+            ], {
+                duration: Math.random() * 12000 + 10000, 
+                iterations: Infinity,
+                direction: 'alternate',
+                easing: 'ease-in-out'
+            });
+        }
+
+        // Eidi Formspree Logic
+        async function sendEidi() {
+            const request = document.getElementById('eidi-request').value;
+            const btn = document.querySelector('.send-eidi-btn');
+            const endpoint = "https://formspree.io/f/myknogop"; // Same ID as page 1
+
+            if (!request.trim()) {
+                alert("Please write something first! 🥀");
+                return;
+            }
+
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            try {
+                await fetch(endpoint, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        category: "Eidi Request",
+                        wish: request,
+                        timestamp: new Date().toLocaleString() 
+                    })
+                });
+                
+                // Success state
+                document.querySelector('.eidi-container').innerHTML = `
+                    <h2 class="eidi-title">Noted.</h2>
+                    <p style="font-family: 'Playfair Display', serif; font-style: italic; color: var(--gold); font-size: 1.2rem;">
+                        Your wish has been delivered. 🥀
+                    </p>
+                `;
+            } catch (error) {
+                alert("Something went wrong, but don't worry, I'll ask you anyway!");
+                btn.innerText = "SEND REQUEST";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
